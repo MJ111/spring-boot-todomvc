@@ -1,0 +1,29 @@
+package todoapp.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import todoapp.web.model.SiteProperties;
+
+@Controller
+public class TodoController {
+	
+	private SiteProperties siteProperties;
+	
+	public TodoController(SiteProperties siteProperties) {
+		this.siteProperties = siteProperties;
+	}
+	
+	@RequestMapping("/todos")
+	public ModelAndView todos() {
+		SiteProperties site = new SiteProperties();
+		site.setAuthor("MJ");
+		
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("todos");
+		mv.addObject("site", site);
+
+		return mv;
+	}
+}

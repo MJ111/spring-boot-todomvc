@@ -1,0 +1,54 @@
+package todoapp.web;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import todoapp.core.user.application.UserJoinder;
+import todoapp.core.user.application.UserPasswordVerifier;
+import todoapp.core.user.domain.UserEntityNotFoundException;
+
+@Controller
+public class LoginController {
+	private UserPasswordVerifier verifier;
+	public LoginController(UserPasswordVerifier verifier, UserJoinder joinder) {
+		super();
+		this.verifier = verifier;
+		this.joinder = joinder;
+	}
+
+	private UserJoinder joinder;
+	
+	@GetMapping("/login")
+	public void loginForm() {}
+	
+	@PostMapping("/login")
+	public String loginProcess(UserCommand command) {
+		try {
+			verifier.verify(command.getUsername(), command.getPassword());
+		} catch (UserEntityNotFoundException e) {
+			joinder.join(command.getUsername(), command.getPassword());
+		}
+		
+		return "redirect:/todos";
+	}
+	
+	static class UserCommand {
+		private String username;
+		public String getUsername() {
+			return username;
+		}
+		public void setUsername(String username) {
+			this.username = username;
+		}
+		public String getPassword() {
+			return password;
+		}
+		public void setPassword(String password) {
+			this.password = password;
+		}
+		private String password;
+		
+		
+	}
+}

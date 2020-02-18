@@ -1,0 +1,71 @@
+package todoapp.web;
+
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import todoapp.core.user.application.UserJoinder;
+import todoapp.core.user.application.UserPasswordVerifier;
+import todoapp.core.user.domain.UserEntityNotFoundException;
+
+@Controller
+public class LoginController {
+	private UserPasswordVerifier verifier;
+	private UserJoinder joinder;
+	
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+	public LoginController(UserPasswordVerifier verifier, UserJoinder joinder) {
+		this.verifier = verifier;
+		this.joinder = joinder;
+	}
+	
+	@GetMapping("/login")
+	public void loginForm() {}
+	
+	@PostMapping("/login")
+	public String loginProcess(@Valid UserCommand command
+			, BindingResult bidingResult
+			, Model model) {
+		
+		if (bindingResult.hasErrors()) {
+			model.addAttribute(bidingResult);
+			model.addAttribute("message", "사용자 입력값이 올바르지 않습니");
+		}
+		
+		try {
+			verifier.verify(command.getUsername(), command.getPassword());
+			log.debug("loggined", command);
+		} catch (UserEntityNotFoundException e) {
+			joinder.join(command.getUsername(), command.getPassword());
+			log.debug("joined", command);
+		}
+		
+		return "redirect:/todos";
+	}
+	
+	static class UserCommand {
+		private String username;
+		public String getUsername() {
+			return username;
+		}
+		public void setUsername(String username) {
+			this.username = username;
+		}
+		public String getPassword() {
+			return password;
+		}
+		public void setPassword(String password) {
+			this.password = password;
+		}
+		private String password;
+		
+		
+	}
+}

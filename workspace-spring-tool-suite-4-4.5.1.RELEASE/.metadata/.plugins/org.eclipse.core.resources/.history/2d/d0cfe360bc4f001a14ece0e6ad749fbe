@@ -1,0 +1,5 @@
+package todoapp.core.todos.infrastructure;
+
+public class TodoRegister {
+
+}

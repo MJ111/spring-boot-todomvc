@@ -1,0 +1,11 @@
+site:
+  author: workshop
+  toggles:
+    auth: true
+    onlineUsersCounter: false
+    
+
+logging.level:
+  todoapp: debug
+  org.springframework.web: DEBUG
+  org.springframework.boot: info

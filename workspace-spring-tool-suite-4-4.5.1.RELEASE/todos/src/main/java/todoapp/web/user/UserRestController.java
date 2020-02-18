@@ -1,0 +1,66 @@
+package todoapp.web.user;
+
+import java.net.URI;
+import java.util.Objects;
+
+import javax.annotation.security.RolesAllowed;
+
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import todoapp.core.user.application.ProfilePictureChanger;
+import todoapp.core.user.domain.ProfilePicture;
+import todoapp.core.user.domain.ProfilePictureStorage;
+import todoapp.core.user.domain.User;
+import todoapp.security.UserSession;
+import todoapp.security.UserSessionRepository;
+import todoapp.web.model.UserProfile;
+
+@RolesAllowed(UserSession.ROLE_USER)
+@RestController
+public class UserRestController {
+	
+	private UserSessionRepository sessionRepository;
+	private ProfilePictureStorage storage;
+	private ProfilePictureChanger changer;
+
+	public UserRestController(UserSessionRepository sessionRepository, ProfilePictureStorage storage, ProfilePictureChanger changer) {
+		this.sessionRepository = sessionRepository;
+		this.storage = storage;
+		this.changer = changer;
+	}
+	
+	@RolesAllowed(UserSession.ROLE_USER)
+	@GetMapping("/api/user/profile")
+	public UserProfile userProfile(UserSession session) {
+//		UserSession session = sessionRepository.get();
+//		if (Objects.nonNull(session)) {
+//			return ResponseEntity.ok(new UserProfile(session.getUser()));
+//		}
+//		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		return new UserProfile(session.getUser());
+	}
+	
+	// 프로필 이미지를 어떻게 할지는 드러내면 안되고 저장한다는 행위만 표시해주기. (AOP)
+	@PostMapping("/api/user/profile-picture")
+	public UserProfile profilePictureChange(UserSession session, MultipartFile profilePicture) {
+		URI profilePictureUri = storage.save(profilePicture.getResource());
+		ProfilePicture newProfilePicture = new ProfilePicture(profilePictureUri);
+		User savedUser = changer.change(session.getUser().getUsername(), newProfilePicture);
+		
+		sessionRepository.set(new UserSession(savedUser));
+		
+		return new UserProfile(savedUser);
+	}
+	
+	@GetMapping("/user/profile-picture")
+	public Resource loadProfilePicture(UserSession session) {
+		return storage.load(session.getUser().getProfilePicture().getUri());
+		// 데이터 타입에 맞게 보내주는 기능을 위해 나중에 message converter hierarchy 를 뒤져보는 것을 추천함.
+	}
+}

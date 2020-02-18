@@ -1,0 +1,7 @@
+site:
+  author: workshop
+
+logging.level:
+  todoapp: debug
+  org.springframework.web: DEBUG
+  org.springframework.boot: info
